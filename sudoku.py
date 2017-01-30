@@ -43,23 +43,23 @@ def iter_unsolved(s):
 
 def reduce_sudoku_and_check_solvability(s):
     """ Solve any cells of `s` in-place where only a single value is possible, returning False if `s` is unsolvable """
-    repeat = False
+    finished = True
     for idx, cell in iter_unsolved(s):
         possibilities = get_possibilities(s, idx)
         if len(possibilities) == 1:
             cell.append(possibilities.pop())
-            repeat = True
+            finished = False
         elif len(possibilities) == 0:
             return False  # Impossible!
-    if repeat:
-        return reduce_sudoku_and_check_solvability(s)
-    return True
+    if finished:
+        return True
+    return reduce_sudoku_and_check_solvability(s)
 
 
 def solve(s):
     """ Returns the solution to the sudoku `s` if it exists, otherwise returns False """
     if not reduce_sudoku_and_check_solvability(s):
-        return False
+        return False  # It's not solvable
     try:
         first_unsolved_idx = s.index([])
     except ValueError:
@@ -70,7 +70,7 @@ def solve(s):
         s2[first_unsolved_idx] = [solution]
         s2 = solve(s2)
         if s2:
-            return s2
+            return s2  # Solved!
     return False  # Couldn't solve it
 
 
