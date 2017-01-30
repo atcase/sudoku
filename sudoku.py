@@ -3,6 +3,7 @@ from operator import itemgetter
 
 
 def print_sudoku(s):
+    """ Display a sudoku `s` stored as a flat list of cells, with each cell either [] (unsolved) or [n] (solved) """
     for row in range(9):
         print(*[c[0] if c else '.' for c in s[row * 9:row * 9 + 9]], sep=' ')
     print()
@@ -13,20 +14,24 @@ def copy_sudoku(s):
 
 
 def same_row_as(idx):
+    """ Return indexes to cells in the same row as `idx` """
     base = idx // 9 * 9
     return range(base, base + 9)
 
 
 def same_col_as(idx):
+    """ Return indexes to cells in the same column as `idx` """
     return range(idx % 9, 81, 9)
 
 
 def same_box_as(idx):
+    """ Return indexes to cells in the same 'box' as `idx` """
     base = idx // 27 * 27 + idx // 3 % 3 * 3
     return chain(range(base, base + 3), range(base + 9, base + 12), range(base + 18, base + 21))
 
 
 def get_possibilities(s, idx):
+    """ Return a set of all the possible solutions to the cell at location `idx` """
     possibilities = set(range(1, 10))
     possibilities -= set(s[i][0] for i in chain(same_row_as(idx), same_col_as(idx), same_box_as(idx)) if s[i])
     return possibilities
@@ -36,7 +41,8 @@ def iter_unsolved(s):
     return filterfalse(itemgetter(1), enumerate(s))
 
 
-def reduce_sudoku(s):
+def reduce_sudoku_and_check_solvability(s):
+    """ Solve any cells of `s` in-place where only a single value is possible, returning False if `s` is unsolvable """
     repeat = False
     for idx, cell in iter_unsolved(s):
         possibilities = get_possibilities(s, idx)
@@ -46,12 +52,13 @@ def reduce_sudoku(s):
         elif len(possibilities) == 0:
             return False  # Impossible!
     if repeat:
-        return reduce_sudoku(s)
+        return reduce_sudoku_and_check_solvability(s)
     return True
 
 
 def solve(s):
-    if not reduce_sudoku(s):
+    """ Returns the solution to the sudoku `s` if it exists, otherwise returns False """
+    if not reduce_sudoku_and_check_solvability(s):
         return False
     try:
         first_unsolved_idx = s.index([])
@@ -69,8 +76,8 @@ def solve(s):
 
 s = [[] for _ in range(81)]  # empty sudoku
 print_sudoku(s)
-result = solve(s)
-if result:
-    print_sudoku(result)
+solved_sudoku = solve(s)
+if solved_sudoku:
+    print_sudoku(solved_sudoku)
 else:
     print("Couldn't solve it")
